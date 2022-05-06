@@ -109,7 +109,9 @@ class TestRectangleMethods(unittest.TestCase):
 
 
     def test_center_distance_squared(self):
-        pass
+        R1 = rct.Rectangle([-2,-2],[0,0])
+        R2 = rct.Rectangle([-1,-1],[1,1])
+        self.assertEqual(2,R1.center_distance_squared(R2))
 
 
 
@@ -138,11 +140,21 @@ class TestRectangleFunctions(unittest.TestCase):
 
 
     def test_bounding_box(self):
-        pass
+        R1 = rct.Rectangle([-2,-2],[0,0])
+        R2 = rct.Rectangle([-1,-1],[1,1])
+        RR = rct.Rectangle([-2,-2],[1,1])
+        self.assertEqual(RR, rct.bounding_box([R1,R2]))
+        self.assertEqual(R1, rct.bounding_box([R1]))
 
 
     def test_bounding_box_points(self):
-        pass
+        P1 = [1,1]
+        P2 = [2,2]
+        P3 = [3,3]
+        R = rct.Rectangle([1,1],[1,1])
+        R1 = rct.Rectangle([1,1],[3,3])
+        self.assertEqual(R,rct.bounding_box_points([P1]))
+        self.assertEqual(R1,rct.bounding_box_points([P1, P2, P3]))
 
 
     def test_EmptyRectangle(self):
