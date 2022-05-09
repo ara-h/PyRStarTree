@@ -15,24 +15,32 @@ p = 9
 
 
 class RStarTree:
-    def __init__(self, children, is_leaf=False, point_data={}):
+    def __init__(self, children, point_data={}):
         """
         Spatially index point data
         ---------------------------------
         Parameters:
         -----------
-        children: The subtrees which determine the key rectangle. Should only
-        be non-empty if is_leaf is False. Length of the child list L should
-        satisfy L=0 or m<=L<=M.
+        children: The subtrees which determine the key rectangle
 
-        is_leaf: true for nodes holding only point data
-
-        point_data: a dictionary where keys are point ids, values are list of
-        point's coordinates.
+        point_data: a dictionary where keys are point ids, values are lists of
+        point coordinates.
         """
+
+        if point_data:
+            if children:
+                raise ValueError
+            else:
+                self.is_leaf = True
+        else:
+            if not children:
+                raise ValueError
+            else:
+                self.is_leaf = False
+
         self.children = children
-        self.is_leaf = is_leaf
         self.points = point_data
+
         self.update_bounding_rectangle()
 
 
