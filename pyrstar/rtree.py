@@ -93,7 +93,7 @@ class RStarTree:
         else:
             pass
 
-    def delete_point_data(self,point_key):
+    def remove_point_data(self,point_key):
         if self.is_leaf:
             del self.points[point_key]
             self.update_bounding_rectangle()
@@ -106,12 +106,12 @@ class RStarTree:
         self.update_bounding_rectangle()
 
 
-    def delete_child(self,rt):
+    def remove_child(self,rt):
         self.children.remove(rt)
         self.update_bounding_rectangle()
 
 
-NullRT = RStarTree(children=[],is_leaf=False)
+NullRT = RStarTree(children=[rct.EmptyRectangle(1)])
 
 
 
@@ -355,7 +355,7 @@ class RTCursor:
             self.root = new_root
         else:
             # delete original leaf
-            pred.delete_child(t)
+            pred.remove_child(t)
 
             # add the new leaves to the predecessor
             pred.add_child(new_leaf_1)
@@ -386,7 +386,7 @@ class RTCursor:
             self.root = new_root
         else:
             # delete original node
-            pred.delete_child(t)
+            pred.remove_child(t)
 
             # add back nodes
             pred.add_child(node_1)
@@ -434,7 +434,7 @@ class RTCursor:
 
         # Remove the chosen points, updating leaf's bounding rectangle
         for pk in to_remove:
-            rt.delete_point_data(pk)
+            rt.remove_point_data(pk)
 
         # close reinsert: because the tree depends on the order of insert
         # inserting pts closer to the center first performs differently
@@ -462,7 +462,7 @@ class RTCursor:
 
         # Remove them, updating node's bounding rectangle
         for c in to_remove:
-            rt.delete_child(c)
+            rt.remove_child(c)
 
         # Iteratively reinsert, passing level of rt as a parameter
         for c in to_re_insert:
