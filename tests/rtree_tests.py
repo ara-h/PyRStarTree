@@ -64,24 +64,67 @@ class TestRStarTreeMethods(unittest.TestCase):
 
 
     def test_add_point_data(self):
-        pass
+        rt1 = rtr.RStarTree(children=[],point_data=self.pd1)
+        rt1.add_point_data(5,[3,3])
+
+        self.assertEqual([3,3],rt1.points[5])
+        self.assertEqual(rt1.key.maxima,[3,3])
 
 
-    def test_delete_point_data(self):
-        pass
+    def test_remove_point_data(self):
+        rt1 = rtr.RStarTree(children=[],point_data=self.pd1)
+        rt1.remove_point_data(2)
+
+        self.assertFalse(2 in rt1.points)
 
 
     def test_add_child(self):
-        pass
+        rt1 = rtr.RStarTree(children=[],point_data=self.pd1)
+        rt2 = rtr.RStarTree(children=[],point_data=self.pd2)
+        rt3 = rtr.RStarTree(children=[],point_data={5:[2.5,0.5],6:[3,1]})
+
+        rt4 = rtr.RStarTree(children=[rt1,rt2])
+        rt4.add_child(rt3)
+
+        self.assertTrue(rt3 in rt4.children)
+        self.assertEqual(rt4.minima,[0,-0.5])
+        self.assertEqual(rt4.maxima,[3,1.5])
 
 
-    def test_delete_child(self):
-        pass
+    def test_remove_child(self):
+        rt1 = rtr.RStarTree(children=[],point_data=self.pd1)
+        rt2 = rtr.RStarTree(children=[],point_data=self.pd2)
+        rt3 = rtr.RStarTree(children=[],point_data={5:[2.5,0.5],6:[3,1]})
+
+        rt4 = rtr.RStarTree(children=[rt1,rt2,rt3])
+        rt4.remove_child(rt3)
+
+        self.assertFalse(rt3 in rt4.children)
+        self.assertEqual(rt4.minima,[0,-0.5])
+        self.assertEqual(rt4.maxima,[1.5,1.5])
 
 
 class TestRStarTreeFunctions(unittest.TestCase):
+    def setUp(self):
+        self.pd1 = {1: [1,1], 2: [1.5,1.5]}
+        self.pd2 = {3: [0,0.5], 4: [1.5,-0.5]}
+        self.pd3 = {5: [2.5,0.5], 6: [3,1]}
+        self.pd4 = {7: [1.5,0], 8: [0.5,1.25]}
+
+
+
     def test_overlap_enlargement_required(self):
-        pass
+        # If rt2 is expanded to accomodate rt4, the key rectangle should come
+        # to overlap with the key rectangle of rt1. That overlap should be of
+        # area 0.125.
+        rt1 = rtr.RStarTree(children=[],point_data=self.pd1)
+        rt2 = rtr.RStarTree(children=[],point_data=self.pd2)
+        rt3 = rtr.RStarTree(children=[],point_data=self.pd3)
+        rt4 = rtr.RStarTree(children=[],point_data=self.pd4)
+
+        rtA = rtr.RStarTree(children=[rt1,rt2,rt3])
+
+        self.assertEqual(rtr.overlap_enlargement_required(rtA,rt2,rt4.key))
 
 
     def test_volume_enlargement_required(self):
