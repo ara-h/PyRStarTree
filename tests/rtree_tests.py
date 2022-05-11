@@ -8,24 +8,59 @@ from pyrstar import rectangle as rct
 from pyrstar import rtree as rtr
 
 class TestRStarTreeMethods(unittest.TestCase):
+    def setUp(self):
+        self.pd1 = {1: [1,1], 2: [1.5,1.5]}
+        self.pd2 = {3: [0,0.5], 4: [1.5,-0.5]}
+
     def test_init(self):
-        pass
+        rt1 = rtr.RStarTree(children=[],point_data=self.pd1)
+
+        self.assertTrue(rt1.is_leaf)
+        self.assertEqual([1,1],rt1.points[1])
+
+        rt2 = rtr.RStarTree(children=[],point_data=self.pd2)
+
+        rt3 = rtr.RStarTree(children=[rt1,rt2])
+
+        self.assertFalse(rt3.is_leaf)
+
+        bb = rct.Rectangle([0,-0.5],[1.5,1.5])
+        self.assertEqual(bb, rt3.key)
 
 
     def test_init_exceptions(self):
-        pass
+        with self.assertRaises(ValueError):
+            rtr.RStarTree(children=[])
+
+        rt1 = rtr.RStarTree(children=[],point_data=self.pd1)
+
+        with self.assertRaises(ValueError):
+            rtr.RStarTree(children=[rt1],point_data=self.pd2)
 
 
     def test_equality_comparison(self):
-        pass
+        rt1 = rtr.RStarTree(children=[],point_data=self.pd1)
+        rt2 = rtr.RStarTree(children=[],point_data=self.pd1)
+        self.assertTrue(rt1 == rt2)
 
 
     def test_does_point_to_leaves(self):
-        pass
+        rt1 = rtr.RStarTree(children=[],point_data=self.pd1)
+        rt2 = rtr.RStarTree(children=[],point_data=self.pd2)
+
+        rt3 = rtr.RStarTree(children=[rt1,rt2])
+
+        self.assertTrue(rt3.does_point_to_leaves())
 
 
     def test_update_bounding_rectangle(self):
-        pass
+        rt1 = rtr.RStarTree(children=[],point_data=self.pd1)
+
+        rt1.points[5] = [2,2]
+        rt1.update_bounding_rectangle()
+
+        self.assertEqual(rt1.key.minima, [1,1])
+        self.assertEqual(rt1.key.maxima, [2,2])
 
 
     def test_add_point_data(self):
