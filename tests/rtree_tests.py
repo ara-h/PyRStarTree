@@ -124,14 +124,20 @@ class TestRStarTreeFunctions(unittest.TestCase):
 
         rtA = rtr.RStarTree(children=[rt1,rt2,rt3])
 
-        self.assertEqual(rtr.overlap_enlargement_required(rtA,rt2,rt4.key))
+        self.assertEqual(rtr.overlap_enlargement_required(rtA,rt2,rt4.key), 0.125)
 
 
     def test_volume_enlargement_required(self):
-        pass
+        rt = rtr.RStarTree(children=[],point_data=self.pd3)
+        entry = rct.Rectangle([0,0],[1.5,1])
+
+        self.assertEqual(rtr.volume_enlargement_required(rt, entry), 0.5*1.5)
 
 
     def test_path_to_subtree(self):
+        # base case: path from starting node to starting node
+        # depth = 1: path from starting node to one of its children
+        # depth >= 2: path from starting node to a non-immediate descendant
         pass
 
 
