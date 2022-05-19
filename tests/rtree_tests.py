@@ -135,10 +135,20 @@ class TestRStarTreeFunctions(unittest.TestCase):
 
 
     def test_path_to_subtree(self):
+        rt1 = rtr.RStarTree(children=[],point_data=self.pd1)
+        rt2c = rtr.RStarTree(children=[],point_data={7: [0.5,0],8: [1,-0.25]})
+        rt2 = rtr.RStarTree(children=[rt2c],point_data=self.pd2)
+        rt3 = rtr.RStarTree(children=[],point_data=self.pd3)
+        rtA = rtr.RStarTree(children=[rt1,rt2,rt3])
+
         # base case: path from starting node to starting node
+        self.assertEqual([rt1], rtr.path_to_subtree(rt1, rt1))
+
         # depth = 1: path from starting node to one of its children
+        self.assertEqual([rtA,rt2], rtr.path_to_subtree(rtA, rt2))
+
         # depth >= 2: path from starting node to a non-immediate descendant
-        pass
+        self.assertEqual([rtA,rt2,rt2c], rtr.path_to_subtree(rtA,rt2c))
 
 
     def test_choose_subtree(self):
