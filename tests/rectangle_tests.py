@@ -162,11 +162,17 @@ class TestRectangleFunctions(unittest.TestCase):
         self.assertEqual(0, ER.volume())
         self.assertTrue(ER.is_point)
 
+        ER = rct.EmptyRectangle(1)
+        self.assertEqual(0, ER.volume())
+        self.assertTrue(ER.is_point)
+
 
     def test_rectangle_perimeter(self):
         R1 = rct.Rectangle([0,0,0],[1,1,1])
         self.assertEqual(12, rct.rectangle_perimeter(R1))
-        self.assertEqual(0, rct.EmptyRectangle(1))
+
+        R2 = rct.EmptyRectangle(1)
+        self.assertEqual(0, rct.rectangle_perimeter(R2))
 
 
 

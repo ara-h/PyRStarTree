@@ -9,7 +9,7 @@ class Rectangle:
             raise ValueError
         self.maxima = maxarray
         self._update_pointness()
-        if not is_point and not are_bounds_rectangular(minarray, maxarray):
+        if not self.is_point and not are_bounds_rectangular(minarray, maxarray):
             raise ValueError
 
 
