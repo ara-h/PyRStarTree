@@ -60,13 +60,19 @@ class Rectangle:
 
 
     def is_element(self, point):
+        """
+        Returns whether the point is an element of self
+        """
+        # TODO: use generator?
         blist = [(self.minima[i] <= point[i] and point[i] <= self.maxima[i])
         for i in range(0,self.dimension)]
         return all(blist)
 
 
     def is_proper_superset(self, other):
-        # returns truth value of (self \subset other)
+        """
+        Returns whether other is a proper subset of self
+        """
         return self.is_element(other.minima) and self.is_element(other.maxima)
 
 
