@@ -15,7 +15,7 @@ p = 9
 
 
 class RStarTree:
-    def __init__(self, children, point_data={}):
+    def __init__(self, children=[], point_data={}):
         """
         Spatially index point data
         ---------------------------------
@@ -139,49 +139,56 @@ def volume_enlargement_required(candidate, entry):
     return vol1 - vol0
 
 
-def path_to_subtree(rt, t, path=[]):
+def is_descendant(rt,rtq):
     """
-    Get path from root rt to subtree t:
-    -----------------------------------
+    Discern whether rtq descends from rt.
+    -------------------------------------
+    """
+    if rt == rtq:
+        return True
+
+    R = rt.key
+    RQ = rtq.key
+    if (not R.is_proper_superset(RQ)) or rt.is_leaf:
+        return False
+
+    candidates = [ch for ch in rt.children if ch.key.is_proper_superset(RQ)]
+    if not candidates:
+        return False
+    else:
+        return any(is_descendant(ch, rtq) for ch in candidates)
+
+
+def path_to_subtree(rt_from, rt_to, path=[]):
+    """
+    Get path from tree rt_from to subtree rt_to:
+    --------------------------------------------
     Parameters:
     -----------
-    rt: the root of the R*-tree
-    t: the subtree of interest
+    rt_from: the starting node
+    rt_to: the subtree of interest
     path: the path traversed thus far
 
     Returns:
     --------
-    path: [rt, ..., t]. If rt is t, then path is [t]
+    updated_path: [rt_from, ..., rt_to]
     """
-    updated_path = path + [rt]
+    updated_path = path + [rt_from]
 
-    t_rectangle = t.key
-    rt_rectangle = rt.key
+    if rt_from == rt_to:
+        return updated_path
 
-    if t_rectangle == rt_rectangle:
-        return [t]
-
-    N = NullRT
-
-    for ch in rt.children:
-        if ch.key.is_proper_superset(t_rectangle):
-            # What do we do if t is in the overlap of two nodes, one of which
-            # has t as a descendant, the other of which does not have t as a
-            # descendant?
-            N = ch
-            break
-
-    if N == NullRT:
+    R = rt_to.key
+    candidates = [ch for ch in rt_from.children if ch.key.is_proper_superset(R)]
+    if not candidates:
+        #TODO: raise error?
         return []
-
-    if N == t:
-        return updated_path + [N]
-
-    return path_to_subtree(N, t, updated_path)
+    else:
+        t = next(ch for ch in candidates if is_descendant(ch, rt_to))
+        return path_to_subtree(t, rt_to, updated_path, call_no)
 
 
-
-def choose_subtree(rt, lvl, entry, path=[]):
+def choose_subtree(rt, lvl, entry):
     """
     Chooses subtree in rt for inserting entry
     -----------------------------------------
@@ -190,17 +197,14 @@ def choose_subtree(rt, lvl, entry, path=[]):
     rt: R*-tree in which entry will be inserted
     lvl: level of node rt. 0 means root level.
     entry: rectangle to be inserted. may be a point rectangle.
-    path: the path traverse thus far in the call
 
     Returns:
     --------
     rt: the chosen subtree
     lvl: the level of the chosen subtree
-    path: the path traversed to the subtree
     """
-    updated_path = path + [rt]
     if rt.is_leaf:
-        return rt, lvl, updated_path
+        return rt, lvl
     if rt.does_point_to_leaves():
         keyfunc = lambda child: (overlap_enlargement_required(rt, child, entry),
         volume_enlargement_required(child,entry), child.key.volume())
@@ -216,7 +220,7 @@ def choose_subtree(rt, lvl, entry, path=[]):
         child.key.volume())
 
         t = min(rt.children, key = keyfunc)
-    return choose_subtree(t, lvl + 1, entry, updated_path)
+    return choose_subtree(t, lvl + 1, entry)
 
 
 class RTCursor:
@@ -238,13 +242,13 @@ class RTCursor:
         P_id, P = point_data
         E = rct.Rectangle(P,P)
 
-        st, lvl, path = choose_subtree(rt, rt_lvl, E)
+        st, lvl = choose_subtree(rt, rt_lvl, E)
 
-        complete_path=[]
+        path = path_to_subtree(rt,st)
         point_count = st.get_point_count()
         if point_count < M:
             st.add_point_data(P_id, P)
-        elif lvl != 0 and len(path) >= 2:
+        elif lvl != 0:
             # overflow not at root
 
             # set predecessor to next to last element of path
@@ -255,25 +259,7 @@ class RTCursor:
             caused_split = self.overflow_treatment(st,lvl,st_pred)
             if caused_split and st_pred.get_child_count() > M:
                 # Propagate overflow treatment up the insertion path
-                complete_path = path_to_subtree(self.root, path[0])[0:-1] + path[0:-1]
-                _ = self.propagate_overflow_treatment(lvl - 1, complete_path)
-        elif lvl != 0 and len(path) == 1:
-            # overflow not at root
-
-            if lvl == 1:
-                assert path[0] in self.root.children
-                complete_path = [self.root, path[0]]
-            else:
-                complete_path = path_to_subtree(self.root, path[0])
-
-            # set predecessor to next to last element of complete path
-            st_pred = complete_path[-2]
-
-            # add point and treat overflow
-            st.add_point_data(P_id, P)
-            caused_split = self.overflow_treatment(st, lvl, st_pred)
-            if caused_split and st_pred.get_child_count() > M:
-                _ = self.propagate_overflow_treatment(lvl - 1, complete_path[0:-1])
+                _ = self.propagate_overflow_treatment(lvl - 1, path)
         else:
             # overflow at root
             st.add_point_data(P_id, P)

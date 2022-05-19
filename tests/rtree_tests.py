@@ -13,12 +13,12 @@ class TestRStarTreeMethods(unittest.TestCase):
         self.pd2 = {3: [0,0.5], 4: [1.5,-0.5]}
 
     def test_init(self):
-        rt1 = rtr.RStarTree(children=[],point_data=self.pd1)
+        rt1 = rtr.RStarTree(point_data=self.pd1)
 
         self.assertTrue(rt1.is_leaf)
         self.assertEqual([1,1],rt1.points[1])
 
-        rt2 = rtr.RStarTree(children=[],point_data=self.pd2)
+        rt2 = rtr.RStarTree(point_data=self.pd2)
 
         rt3 = rtr.RStarTree(children=[rt1,rt2])
 
@@ -30,23 +30,23 @@ class TestRStarTreeMethods(unittest.TestCase):
 
     def test_init_exceptions(self):
         with self.assertRaises(ValueError):
-            rtr.RStarTree(children=[])
+            rtr.RStarTree()
 
-        rt1 = rtr.RStarTree(children=[],point_data=self.pd1)
+        rt1 = rtr.RStarTree(point_data=self.pd1)
 
         with self.assertRaises(ValueError):
             rtr.RStarTree(children=[rt1],point_data=self.pd2)
 
 
     def test_equality_comparison(self):
-        rt1 = rtr.RStarTree(children=[],point_data=self.pd1)
-        rt2 = rtr.RStarTree(children=[],point_data=self.pd1)
+        rt1 = rtr.RStarTree(point_data=self.pd1)
+        rt2 = rtr.RStarTree(point_data=self.pd1)
         self.assertTrue(rt1 == rt2)
 
 
     def test_does_point_to_leaves(self):
-        rt1 = rtr.RStarTree(children=[],point_data=self.pd1)
-        rt2 = rtr.RStarTree(children=[],point_data=self.pd2)
+        rt1 = rtr.RStarTree(point_data=self.pd1)
+        rt2 = rtr.RStarTree(point_data=self.pd2)
 
         rt3 = rtr.RStarTree(children=[rt1,rt2])
 
@@ -54,7 +54,7 @@ class TestRStarTreeMethods(unittest.TestCase):
 
 
     def test_update_bounding_rectangle(self):
-        rt1 = rtr.RStarTree(children=[],point_data=self.pd1)
+        rt1 = rtr.RStarTree(point_data=self.pd1)
 
         rt1.points[5] = [2,2]
         rt1.update_bounding_rectangle()
@@ -64,7 +64,7 @@ class TestRStarTreeMethods(unittest.TestCase):
 
 
     def test_add_point_data(self):
-        rt1 = rtr.RStarTree(children=[],point_data=self.pd1)
+        rt1 = rtr.RStarTree(point_data=self.pd1)
         rt1.add_point_data(5,[3,3])
 
         self.assertEqual([3,3],rt1.points[5])
@@ -72,16 +72,16 @@ class TestRStarTreeMethods(unittest.TestCase):
 
 
     def test_remove_point_data(self):
-        rt1 = rtr.RStarTree(children=[],point_data=self.pd1)
+        rt1 = rtr.RStarTree(point_data=self.pd1)
         rt1.remove_point_data(2)
 
         self.assertFalse(2 in rt1.points)
 
 
     def test_add_child(self):
-        rt1 = rtr.RStarTree(children=[],point_data=self.pd1)
-        rt2 = rtr.RStarTree(children=[],point_data=self.pd2)
-        rt3 = rtr.RStarTree(children=[],point_data={5:[2.5,0.5],6:[3,1]})
+        rt1 = rtr.RStarTree(point_data=self.pd1)
+        rt2 = rtr.RStarTree(point_data=self.pd2)
+        rt3 = rtr.RStarTree(point_data={5:[2.5,0.5],6:[3,1]})
 
         rt4 = rtr.RStarTree(children=[rt1,rt2])
         rt4.add_child(rt3)
@@ -92,9 +92,9 @@ class TestRStarTreeMethods(unittest.TestCase):
 
 
     def test_remove_child(self):
-        rt1 = rtr.RStarTree(children=[],point_data=self.pd1)
-        rt2 = rtr.RStarTree(children=[],point_data=self.pd2)
-        rt3 = rtr.RStarTree(children=[],point_data={5:[2.5,0.5],6:[3,1]})
+        rt1 = rtr.RStarTree(point_data=self.pd1)
+        rt2 = rtr.RStarTree(point_data=self.pd2)
+        rt3 = rtr.RStarTree(point_data={5:[2.5,0.5],6:[3,1]})
 
         rt4 = rtr.RStarTree(children=[rt1,rt2,rt3])
         rt4.remove_child(rt3)
@@ -117,10 +117,10 @@ class TestRStarTreeFunctions(unittest.TestCase):
         # If rt2 is expanded to accomodate rt4, the key rectangle should come
         # to overlap with the key rectangle of rt1. That overlap should be of
         # area 0.125.
-        rt1 = rtr.RStarTree(children=[],point_data=self.pd1)
-        rt2 = rtr.RStarTree(children=[],point_data=self.pd2)
-        rt3 = rtr.RStarTree(children=[],point_data=self.pd3)
-        rt4 = rtr.RStarTree(children=[],point_data=self.pd4)
+        rt1 = rtr.RStarTree(point_data=self.pd1)
+        rt2 = rtr.RStarTree(point_data=self.pd2)
+        rt3 = rtr.RStarTree(point_data=self.pd3)
+        rt4 = rtr.RStarTree(point_data=self.pd4)
 
         rtA = rtr.RStarTree(children=[rt1,rt2,rt3])
 
@@ -128,17 +128,28 @@ class TestRStarTreeFunctions(unittest.TestCase):
 
 
     def test_volume_enlargement_required(self):
-        rt = rtr.RStarTree(children=[],point_data=self.pd3)
+        rt = rtr.RStarTree(point_data=self.pd3)
         entry = rct.Rectangle([0,0],[1.5,1])
 
         self.assertEqual(rtr.volume_enlargement_required(rt, entry), 0.5*1.5)
 
+    def test_is_descendant():
+        rt3 = rtr.RStarTree(point_data={1: [2.25,1.75], 2: [2.75,2.25]})
+        rt2 = rtr.RStarTree(children=[rt3])
+        rt2.key = rct.Rectangle([2,1.25],[4,2.75])
+        rt1 = rtr.RStarTree(point_data={3: [1,1], 4: [3,3]})
+        rtP = rtr.RStarTree(children=[rt1,rt2])
+
+        self.assertTrue(rtr.is_descendant(rt3,rt3))
+        self.assertTrue(rtr.is_descendant(rt2,rt3))
+        self.assertFalse(rtr.is_descendant(rt1,rt3))
 
     def test_path_to_subtree(self):
-        rt1 = rtr.RStarTree(children=[],point_data=self.pd1)
-        rt2c = rtr.RStarTree(children=[],point_data={7: [0.5,0],8: [1,-0.25]})
-        rt2 = rtr.RStarTree(children=[rt2c],point_data=self.pd2)
-        rt3 = rtr.RStarTree(children=[],point_data=self.pd3)
+        rt1 = rtr.RStarTree(point_data=self.pd1)
+        rt2c = rtr.RStarTree(point_data={7: [0.5,0],8: [1,-0.25]})
+        rt2 = rtr.RStarTree(children=[rt2c])
+        rt2.key = rct.Rectangle([0,-0.5],[1.5,0.5])
+        rt3 = rtr.RStarTree(point_data=self.pd3)
         rtA = rtr.RStarTree(children=[rt1,rt2,rt3])
 
         # base case: path from starting node to starting node
