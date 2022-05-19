@@ -63,10 +63,8 @@ class Rectangle:
         """
         Returns whether the point is an element of self
         """
-        # TODO: use generator?
-        blist = [(self.minima[i] <= point[i] and point[i] <= self.maxima[i])
-        for i in range(0,self.dimension)]
-        return all(blist)
+        return all((self.minima[i] <= point[i] and point[i] <= self.maxima[i])
+        for i in range(0,self.dimension))
 
 
     def is_proper_superset(self, other):
