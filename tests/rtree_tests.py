@@ -163,7 +163,68 @@ class TestRStarTreeFunctions(unittest.TestCase):
 
 
     def test_choose_subtree(self):
-        pass
+        # case 1: the criterion overlap_enlargement_required does not result in
+        # any ties, and so rt1 is chosen
+        points1 = {"a" : [0, 0], "b" : [1.75, 0.75]}
+        rt1 = rtr.RStarTree(point_data=points1)
+
+        points2 = {"c" : [0, 1], "d" : [0.5, 1.5]}
+        rt2 = rtr.RStarTree(point_data=points2)
+
+        points3 = {"e" : [1, 1], "f" : [1.5, 1.5]}
+        rt3 = rtr.RStarTree(point_data=points3)
+
+        rtA = rtr.RStarTree(children=[rt1,rt2,rt3])
+
+        test_pt = [1.5, 0.5]
+        test_entry = rct.Rectangle([test_pt, test_pt])
+
+        # Expect rt1 as the chosen subtree and 1 as the level of insertion
+        self.assertEqual((rt1, 1), rtr.choose_subtree(rtA, 0, test_entry))
+
+        # case 2: criterion overlap_enlargment_required results in ties,
+        # but ties are resolved by volume_enlargement_required, and so rt1 is
+        # chosen
+
+        points1 = {"a" : [1, 1], "b" : [1.5, 1.5]}
+        rt1 = rtr.RStarTree(point_data=points1)
+
+        points2 = {"c" : [2, 1], "d" : [2.5, 1.5]}
+        rt2 = rtr.RStarTree(point_data=points2)
+
+        points3 = {"e" : [2, -0.5], "f" : [2.5, 0]}
+        rt3 = rtr.RStarTree(point_data=points3)
+
+        rtA = rtr.RStarTree(children=[rt1,rt2,rt3])
+
+        test_pt = [1.625, 0.5]
+        test_entry = rct.Rectangle([test_pt, test_pt])
+
+        # Expect rt1 as the chosen subtree and 1 as the level of insertion
+        self.assertEqual((rt1, 1), rtr.choose_subtree(rtA, 0, test_entry))
+
+        # case 3: first two criteria result in ties, but ties are resolved by
+        # volume comparison, and so rt4 is chosen
+
+        points1 = {"a" : [-1, -1], "b" : [-0.75, -0.75]}
+        rt1 = rtr.RStarTree(point_data=points1)
+
+        points2 = {"c" : [-1, -0.25], "d" : [-0.75, 0]}
+        rt2 = rtr.RStarTree(point_data=points2)
+
+        points3 = {"e" : [-0.25, -0.25], "f" : [0, 0]}
+        rt3 = rtr.RStarTree(point_data=points3)
+
+        points4 = {"g" : [-0.25,-0.825], "h" : [0, -0.75]}
+        rt4 = rtr.RStarTree(point_data=points4)
+
+        rtA = rtr.RStarTree(children=[rt1,rt2,rt3,rt4])
+
+        test_pt = [-0.5,-0.5]
+        test_entry = rct.Rectangle([test_pt, test_pt])
+
+        # Expect rt4 as the chosen subtree and 1 as the level of insertion
+        self.assertEqual((rt4, 1), rtr.choose_subtree(rtA, 0, test_entry))
 
 
     def test_choose_split_axis_leaf(self):
