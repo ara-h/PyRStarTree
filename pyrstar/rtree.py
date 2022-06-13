@@ -272,13 +272,13 @@ class RTCursor:
 
     def _insert_node(self, rt, rt_lvl, t):
         E = t.key
-        st, lvl, path = choose_subtree(rt, rt_lvl, E)
+        st, lvl = choose_subtree(rt, rt_lvl, E)
 
-        complete_path = []
+        path = path_to_subtree(rt, st)
         child_count = st.get_child_count()
         if child_count < M:
             st.add_child(t)
-        elif lvl != 0 and len(path) >= 2:
+        elif lvl != 0:
             # overflow not at root
 
             # set predecessor to next to last element of path
@@ -289,34 +289,15 @@ class RTCursor:
             caused_split = self.overflow_treatment(st, lvl, st_pred)
             if caused_split and st_pred.get_child_count() > M:
                 # Propagate overflow_treatment up the insertion path
-                complete_path = path_to_subtree(self.root, path[0])[0:-1] + path[0:-1]
-                # output would indicate whether a root split was performed
-                _ = self.propagate_overflow_treatment(lvl - 1, complete_path)
-        elif lvl != 0 and len(path) == 1:
-            # overflow not at root
-
-            if lvl == 1:
-                assert path[0] in self.root.children
-                complete_path = [self.root, path[0]]
-            else:
-                complete_path = path_to_subtree(self.root, path[0])
-
-            # set predecessor to next to last element of complete path
-            st_pred = complete_path[-2]
-
-            # add node and then treat overflow
-            st.add_child(t)
-            caused_split = self.overflow_treatment(st, lvl, st_pred)
-            if caused_split and st_pred.get_child_count() > M:
-                # Propagate overflow treatment upward
-                _ = self.propagate_overflow_treatment(lvl - 1, complete_path[0:-1])
+                _ = self.propagate_overflow_treatment(lvl - 1, path)
         else:
             # overflow at root
             # add node to root and treat overflow
             st.add_child(t)
             _ = self.overflow_treatment(st, lvl, NullRT)
 
-        # Adjust all covering rectangles in the insertion path
+        # Make sure all covering rectangles in insertion path are adjusted
+        # to be minimum bounding rectangles
 
 
     def split_leaf(self, t, pred):
