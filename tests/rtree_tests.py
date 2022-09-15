@@ -3,6 +3,7 @@ import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__),'..')))
 
 import unittest
+import pandas as pd
 
 from pyrstar import rectangle as rct
 from pyrstar import rtree as rtr
@@ -29,9 +30,6 @@ class TestRStarTreeMethods(unittest.TestCase):
 
 
     def test_init_exceptions(self):
-        with self.assertRaises(ValueError):
-            rtr.RStarTree()
-
         rt1 = rtr.RStarTree(point_data=self.pd1)
 
         with self.assertRaises(ValueError):
@@ -87,8 +85,8 @@ class TestRStarTreeMethods(unittest.TestCase):
         rt4.add_child(rt3)
 
         self.assertTrue(rt3 in rt4.children)
-        self.assertEqual(rt4.minima,[0,-0.5])
-        self.assertEqual(rt4.maxima,[3,1.5])
+        self.assertEqual(rt4.key.minima,[0,-0.5])
+        self.assertEqual(rt4.key.maxima,[3,1.5])
 
 
     def test_remove_child(self):
@@ -100,8 +98,8 @@ class TestRStarTreeMethods(unittest.TestCase):
         rt4.remove_child(rt3)
 
         self.assertFalse(rt3 in rt4.children)
-        self.assertEqual(rt4.minima,[0,-0.5])
-        self.assertEqual(rt4.maxima,[1.5,1.5])
+        self.assertEqual(rt4.key.minima,[0,-0.5])
+        self.assertEqual(rt4.key.maxima,[1.5,1.5])
 
 
 class TestRStarTreeFunctions(unittest.TestCase):
@@ -131,9 +129,9 @@ class TestRStarTreeFunctions(unittest.TestCase):
         rt = rtr.RStarTree(point_data=self.pd3)
         entry = rct.Rectangle([0,0],[1.5,1])
 
-        self.assertEqual(rtr.volume_enlargement_required(rt, entry), 0.5*1.5)
+        self.assertEqual(rtr.volume_enlargement_required(rt, entry), 2.75)
 
-    def test_is_descendant():
+    def test_is_descendant(self):
         rt3 = rtr.RStarTree(point_data={1: [2.25,1.75], 2: [2.75,2.25]})
         rt2 = rtr.RStarTree(children=[rt3])
         rt2.key = rct.Rectangle([2,1.25],[4,2.75])
@@ -165,7 +163,7 @@ class TestRStarTreeFunctions(unittest.TestCase):
     def test_choose_subtree(self):
         # case 1: the criterion overlap_enlargement_required does not result in
         # any ties, and so rt1 is chosen
-        points1 = {"a" : [0, 0], "b" : [1.75, 0.75]}
+        points1 = {"a" : [0, 0], "b" : [1.25, 0.75]}
         rt1 = rtr.RStarTree(point_data=points1)
 
         points2 = {"c" : [0, 1], "d" : [0.5, 1.5]}
@@ -177,7 +175,7 @@ class TestRStarTreeFunctions(unittest.TestCase):
         rtA = rtr.RStarTree(children=[rt1,rt2,rt3])
 
         test_pt = [1.5, 0.5]
-        test_entry = rct.Rectangle([test_pt, test_pt])
+        test_entry = rct.Rectangle(test_pt, test_pt)
 
         # Expect rt1 as the chosen subtree and 1 as the level of insertion
         self.assertEqual((rt1, 1), rtr.choose_subtree(rtA, 0, test_entry))
@@ -198,7 +196,7 @@ class TestRStarTreeFunctions(unittest.TestCase):
         rtA = rtr.RStarTree(children=[rt1,rt2,rt3])
 
         test_pt = [1.625, 0.5]
-        test_entry = rct.Rectangle([test_pt, test_pt])
+        test_entry = rct.Rectangle(test_pt, test_pt)
 
         # Expect rt1 as the chosen subtree and 1 as the level of insertion
         self.assertEqual((rt1, 1), rtr.choose_subtree(rtA, 0, test_entry))
@@ -221,14 +219,22 @@ class TestRStarTreeFunctions(unittest.TestCase):
         rtA = rtr.RStarTree(children=[rt1,rt2,rt3,rt4])
 
         test_pt = [-0.5,-0.5]
-        test_entry = rct.Rectangle([test_pt, test_pt])
+        test_entry = rct.Rectangle(test_pt, test_pt)
 
         # Expect rt4 as the chosen subtree and 1 as the level of insertion
         self.assertEqual((rt4, 1), rtr.choose_subtree(rtA, 0, test_entry))
 
 
     def test_choose_split_axis_leaf(self):
-        pass
+        # given that the node is a leaf, choose the axis along which to perform the split
+
+        df = pd.read_csv("test_data.csv")
+        data = [(int(x[0]), x[1:]) for x in df.values.tolist()]
+        test_cursor = rtr.create_tree_from_pts(data[:32])
+        test_tree = test_cursor.root
+        test_tree.add_point_data(32,data[32][1])
+
+        self.assertEqual(3, rtr.choose_split_axis_leaf(test_tree))
 
 
     def test_choose_split_index_leaf(self):
