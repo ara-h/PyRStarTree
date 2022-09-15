@@ -460,7 +460,6 @@ def choose_split_axis_leaf(t):
 
         S_i = 0.0
         for j in range(1, M - 2*m + 2):
-            # does this range capture all possible distributions into two groups?
             first_split_group = sorted_by_i[0:(m - 1 + j)]
             bb_1 = rct.bounding_box_points([t.points[k] for k in first_split_group])
 
@@ -474,8 +473,6 @@ def choose_split_axis_leaf(t):
 
 
 def choose_split_index_leaf(t,axis):
-    d = t.key.dimension
-
     kf = lambda k: (t.points[k])[axis]
     sorted_along_axis = sorted(list(t.points), key = kf)
 
@@ -525,8 +522,6 @@ def choose_split_axis(t):
 
 
 def choose_split_index(t,axis):
-    d = t.key.dimension
-
     child_rects = t.get_child_rectangles()
 
     lower_kf = lambda ch: ch.minima[axis]
