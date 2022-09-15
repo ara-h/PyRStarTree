@@ -32,11 +32,14 @@ class RStarTree:
                 raise ValueError
             else:
                 self.is_leaf = True
+                self.is_null = False
         else:
             if not children:
-                raise ValueError
+                self.is_leaf = False
+                self.is_null = True
             else:
                 self.is_leaf = False
+                self.is_null = False
 
         self.children = children
         self.points = point_data
@@ -45,6 +48,7 @@ class RStarTree:
 
 
     def __eq__(self, other):
+        # check that children/point data is the same?
         return self.key == other.key and self.is_leaf == other.is_leaf
 
 
@@ -77,6 +81,8 @@ class RStarTree:
         if self.is_leaf:
             P = self.get_points()
             new_key = rct.bounding_box_points(P)
+        elif self.is_null:
+            new_key = rct.EmptyRectangle(1)
         else:
             R = self.get_child_rectangles()
             if R:
@@ -111,7 +117,7 @@ class RStarTree:
         self.update_bounding_rectangle()
 
 
-NullRT = RStarTree(children=[rct.EmptyRectangle(1)])
+NullRT = RStarTree()
 
 
 
@@ -185,7 +191,7 @@ def path_to_subtree(rt_from, rt_to, path=[]):
         return []
     else:
         t = next(ch for ch in candidates if is_descendant(ch, rt_to))
-        return path_to_subtree(t, rt_to, updated_path, call_no)
+        return path_to_subtree(t, rt_to, updated_path)
 
 
 def choose_subtree(rt, lvl, entry):
@@ -563,7 +569,7 @@ def create_tree_from_pts(pts_tuples):
     retv: an RTCursor to the instantiated tree
     """
     pt_dict = {k : v for k,v in pts_tuples[0:M-1]}
-    starting_node = RStarTree(children = [], is_leaf=True, point_data = pt_dict)
+    starting_node = RStarTree(children = [], point_data = pt_dict)
 
     retv = RTCursor(starting_node)
 
